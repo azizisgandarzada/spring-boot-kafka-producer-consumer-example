@@ -1,4 +1,4 @@
-package com.azizi.prize.service;
+package com.azizi.payment.service;
 
 import com.azizi.common.constants.KafkaTopicConstants;
 import com.azizi.common.enums.NotificationType;
@@ -6,7 +6,7 @@ import com.azizi.common.payload.EmailPayload;
 import com.azizi.common.payload.MobilePushPayload;
 import com.azizi.common.payload.NotificationPayload;
 import com.azizi.common.payload.SmsPayload;
-import com.azizi.prize.producer.KafkaMessageSender;
+import com.azizi.payment.producer.KafkaMessageSender;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;

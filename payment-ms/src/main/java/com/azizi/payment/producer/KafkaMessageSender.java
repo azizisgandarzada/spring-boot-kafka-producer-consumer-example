@@ -1,4 +1,4 @@
-package com.azizi.prize.producer;
+package com.azizi.payment.producer;
 
 import com.azizi.common.payload.NotificationPayload;
 import lombok.AccessLevel;

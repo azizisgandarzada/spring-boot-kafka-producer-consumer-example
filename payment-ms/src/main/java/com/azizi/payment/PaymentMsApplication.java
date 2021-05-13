@@ -1,6 +1,6 @@
-package com.azizi.prize;
+package com.azizi.payment;
 
-import com.azizi.prize.service.PaymentService;
+import com.azizi.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;

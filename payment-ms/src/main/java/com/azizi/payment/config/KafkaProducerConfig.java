@@ -1,4 +1,4 @@
-package com.azizi.prize.config;
+package com.azizi.payment.config;
 
 import com.azizi.common.payload.NotificationPayload;
 import java.util.HashMap;

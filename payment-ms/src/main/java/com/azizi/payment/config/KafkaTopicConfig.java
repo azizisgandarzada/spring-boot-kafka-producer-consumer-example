@@ -1,4 +1,4 @@
-package com.azizi.prize.config;
+package com.azizi.payment.config;
 
 import com.azizi.common.constants.KafkaTopicConstants;
 import java.util.HashMap;
