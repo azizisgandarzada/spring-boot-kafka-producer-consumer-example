@@ -1,0 +1,5 @@
+rootProject.name = 'spring-boot-kafka-producer-consumer-example'
+include 'payment-ms'
+include 'notification-ms'
+include 'common'
+

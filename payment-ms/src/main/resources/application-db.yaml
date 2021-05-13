@@ -1,0 +1,9 @@
+spring:
+  data:
+    mongodb:
+      username: ${MONGODB_USER:username}
+      password: ${MONGODB_PASS:password}
+      database: ${MONGODB_NAME:notification_db}
+      host: ${MONGODB_HOST:localhost}
+      port: ${MONGODB_PORT:27018}
+      auto-index-creation: true

@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: payment-ms
+  profiles:
+    include:
+      - server
+      - db
+      - kafka
+      - logging

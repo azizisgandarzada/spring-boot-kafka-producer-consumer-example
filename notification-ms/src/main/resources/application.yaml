@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: notification-ms
+  profiles:
+    include:
+      - server
+      - db
+      - kafka
+      - logging
