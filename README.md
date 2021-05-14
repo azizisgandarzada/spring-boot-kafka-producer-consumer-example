@@ -14,5 +14,13 @@ docker-compose up -d
 
 * Run payment-ms application
 
+## Mongo Properties
 
+```java
+username: username
+password: password
+db: notification_db
+host: localhost
+port: 27018
+```
 
