@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Lazy))
-public class SmsService implements NotificationService {
+public class SmsService implements NotificationService<Sms> {
 
     private final LinkedBlockingQueue<Sms> smsLinkedBlockingQueue;
     private final SmsRepository smsRepository;
@@ -29,7 +29,6 @@ public class SmsService implements NotificationService {
                 .status(NotificationStatus.IN_QUEUE)
                 .text(smsPayload.getText())
                 .phoneNumber(smsPayload.getPhoneNumber())
-                .createdAt(LocalDateTime.now())
                 .build();
         smsRepository.save(sms);
         try {
@@ -40,7 +39,8 @@ public class SmsService implements NotificationService {
         }
     }
 
-    public void processSms() {
+    @Override
+    public void processNotification() {
         while (true) {
             if (smsLinkedBlockingQueue.isEmpty()) {
                 continue;
@@ -60,13 +60,14 @@ public class SmsService implements NotificationService {
         }
     }
 
-    public void send(Sms sms) {
-        log.info("Sms sending... {}", sms);
-        smsRepository.findById(sms.getId()).ifPresent(s -> {
-            s.setStatus(NotificationStatus.SENT);
-            s.setSendAt(LocalDateTime.now());
-            smsRepository.save(s);
-            log.info("Sms sent {}", s);
+    @Override
+    public void send(Sms notification) {
+        smsRepository.findById(notification.getId()).ifPresent(sms -> {
+            log.info("Sms sending... {}", sms);
+            sms.setStatus(NotificationStatus.SENT);
+            sms.setSendAt(LocalDateTime.now());
+            smsRepository.save(sms);
+            log.info("Sms sent {}", sms);
         });
     }
 

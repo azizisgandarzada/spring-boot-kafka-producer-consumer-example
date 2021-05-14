@@ -17,7 +17,7 @@ public class NotificationServiceFactory {
 
     private final ApplicationContext applicationContext;
 
-    public NotificationService getNotificationService(NotificationType notificationType) {
+    public NotificationService<?> getNotificationService(NotificationType notificationType) {
         switch (notificationType) {
             case EMAIL:
                 return applicationContext.getBean(EmailService.class);

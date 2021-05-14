@@ -23,11 +23,11 @@ public class PaymentService {
 
     @Async
     public void sendEmailWhenPaymentIsSuccessful() {
-        IntStream.range(1, 15).forEach(i -> {
+        IntStream.range(1, 5000).forEach(i -> {
             EmailPayload emailPayload = EmailPayload.builder()
-                    .subject("test")
-                    .content("test")
-                    .receivers(List.of("example@gmail.com"))
+                    .subject("Balance Info")
+                    .content("10 USD has been removed from your balance. Balance: 1000 USD")
+                    .receivers(List.of("test@gmail.com"))
                     .build();
             NotificationPayload payload = NotificationPayload.builder()
                     .userId(i)
@@ -40,9 +40,9 @@ public class PaymentService {
 
     @Async
     public void sendSmsWhenPaymentIsSuccessful() {
-        IntStream.range(1, 15).forEach(i -> {
+        IntStream.range(1, 5000).forEach(i -> {
             SmsPayload smsPayload = SmsPayload.builder()
-                    .text("test")
+                    .text("10 USD has been removed from your balance. Balance: 1000 USD")
                     .phoneNumber("test")
                     .build();
             NotificationPayload payload = NotificationPayload.builder()
@@ -56,12 +56,12 @@ public class PaymentService {
 
     @Async
     public void sendMobilePushWhenPaymentIsSuccessful() {
-        IntStream.range(1, 15).forEach(i -> {
+        IntStream.range(1, 5000).forEach(i -> {
             MobilePushPayload mobilePushPayload = MobilePushPayload.builder()
-                    .title("test")
-                    .body("test")
+                    .title("Balance Info")
+                    .body("10 USD has been removed from your balance. Balance: 1000 USD")
                     .token("test")
-                    .data(Map.of("test", "test"))
+                    .data(Map.of("amount", "5 USD"))
                     .build();
             NotificationPayload payload = NotificationPayload.builder()
                     .userId(i)

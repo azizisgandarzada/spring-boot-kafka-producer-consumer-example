@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class NotificationConsumer {
+public class KafkaNotificationConsumer {
 
     private final NotificationServiceFactory notificationServiceFactory;
 
@@ -23,7 +23,7 @@ public class NotificationConsumer {
     public void consumePayment(@Payload ConsumerRecord<String, NotificationPayload> record) {
         log.info("Message Received -> record {}", record);
         NotificationPayload payload = record.value();
-        NotificationService notificationService = notificationServiceFactory.getNotificationService(payload.getType());
+        NotificationService<?> notificationService = notificationServiceFactory.getNotificationService(payload.getType());
         notificationService.addQueue(payload);
     }
 

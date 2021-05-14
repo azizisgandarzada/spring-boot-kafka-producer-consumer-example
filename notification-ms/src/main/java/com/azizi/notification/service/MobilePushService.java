@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Lazy))
-public class MobilePushService implements NotificationService {
+public class MobilePushService implements NotificationService<MobilePush> {
 
 
     private final LinkedBlockingQueue<MobilePush> mobilePushLinkedBlockingQueue;
@@ -31,7 +31,6 @@ public class MobilePushService implements NotificationService {
                 .title(mobilePushPayload.getTitle())
                 .body(mobilePushPayload.getBody())
                 .token(mobilePushPayload.getToken())
-                .createdAt(LocalDateTime.now())
                 .build();
         mobilePushRepository.save(mobilePush);
         try {
@@ -42,19 +41,20 @@ public class MobilePushService implements NotificationService {
         }
     }
 
-    public void processMobilePush() {
+    @Override
+    public void processNotification() {
         while (true) {
             if (mobilePushLinkedBlockingQueue.isEmpty()) {
                 continue;
             }
             try {
-                MobilePush mobilePush = mobilePushLinkedBlockingQueue.take();
-                log.info("Mobile PushNotification taken from queue {}", mobilePush);
-                mobilePushRepository.findById(mobilePush.getId()).ifPresent(mp -> {
-                    mp.setStatus(NotificationStatus.PROCESSING);
-                    mp.setProcessedAt(LocalDateTime.now());
-                    mobilePushRepository.save(mp);
-                    asyncService.sendMobilePush(mp);
+                MobilePush notification = mobilePushLinkedBlockingQueue.take();
+                log.info("Mobile PushNotification taken from queue {}", notification);
+                mobilePushRepository.findById(notification.getId()).ifPresent(mobilePush -> {
+                    mobilePush.setStatus(NotificationStatus.PROCESSING);
+                    mobilePush.setProcessedAt(LocalDateTime.now());
+                    mobilePushRepository.save(mobilePush);
+                    asyncService.sendMobilePush(mobilePush);
                 });
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
@@ -62,13 +62,14 @@ public class MobilePushService implements NotificationService {
         }
     }
 
-    public void send(MobilePush mobilePush) {
-        log.info("Mobile Push Notification sending... {}", mobilePush);
-        mobilePushRepository.findById(mobilePush.getId()).ifPresent(mp -> {
-            mp.setStatus(NotificationStatus.SENT);
-            mp.setSendAt(LocalDateTime.now());
-            mobilePushRepository.save(mp);
-            log.info("Mobile Push Notification sent {}", mp);
+    @Override
+    public void send(MobilePush notification) {
+        mobilePushRepository.findById(notification.getId()).ifPresent(mobilePush -> {
+            log.info("Mobile Push Notification sending... {}", mobilePush);
+            mobilePush.setStatus(NotificationStatus.SENT);
+            mobilePush.setSendAt(LocalDateTime.now());
+            mobilePushRepository.save(mobilePush);
+            log.info("Mobile Push Notification sent {}", mobilePush);
         });
     }
 

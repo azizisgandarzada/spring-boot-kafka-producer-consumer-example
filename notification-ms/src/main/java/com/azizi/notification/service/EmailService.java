@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Lazy))
-public class EmailService implements NotificationService {
+public class EmailService implements NotificationService<Email> {
 
     private final LinkedBlockingQueue<Email> emailLinkedBlockingQueue;
     private final EmailRepository emailRepository;
@@ -30,7 +30,6 @@ public class EmailService implements NotificationService {
                 .subject(emailPayload.getSubject())
                 .content(emailPayload.getContent())
                 .receivers(emailPayload.getReceivers())
-                .createdAt(LocalDateTime.now())
                 .build();
         emailRepository.save(email);
         try {
@@ -41,19 +40,20 @@ public class EmailService implements NotificationService {
         }
     }
 
-    public void processEmail() {
+    @Override
+    public void processNotification() {
         while (true) {
             if (emailLinkedBlockingQueue.isEmpty()) {
                 continue;
             }
             try {
-                Email email = emailLinkedBlockingQueue.take();
-                log.info("Email taken from queue {}", email);
-                emailRepository.findById(email.getId()).ifPresent(e -> {
-                    e.setStatus(NotificationStatus.PROCESSING);
-                    e.setProcessedAt(LocalDateTime.now());
-                    emailRepository.save(e);
-                    asyncService.sendEmail(e);
+                Email notification = emailLinkedBlockingQueue.take();
+                log.info("Email taken from queue {}", notification);
+                emailRepository.findById(notification.getId()).ifPresent(email -> {
+                    email.setStatus(NotificationStatus.PROCESSING);
+                    email.setProcessedAt(LocalDateTime.now());
+                    emailRepository.save(email);
+                    asyncService.sendEmail(email);
                 });
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
@@ -61,13 +61,14 @@ public class EmailService implements NotificationService {
         }
     }
 
-    public void send(Email email) {
-        log.info("Email sending... {}", email);
-        emailRepository.findById(email.getId()).ifPresent(e -> {
-            e.setStatus(NotificationStatus.SENT);
-            e.setSendAt(LocalDateTime.now());
-            emailRepository.save(e);
-            log.info("Email sent {}", e);
+    @Override
+    public void send(Email notification) {
+        emailRepository.findById(notification.getId()).ifPresent(email -> {
+            log.info("Email sending... {}", email);
+            email.setStatus(NotificationStatus.SENT);
+            email.setSendAt(LocalDateTime.now());
+            emailRepository.save(email);
+            log.info("Email sent {}", email);
         });
     }
 

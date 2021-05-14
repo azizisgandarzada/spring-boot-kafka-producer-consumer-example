@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AsyncService {
 
-    private final EmailService emailService;
-    private final SmsService smsService;
-    private final MobilePushService mobilePushService;
+    private final NotificationService<Email> emailService;
+    private final NotificationService<Sms> smsService;
+    private final NotificationService<MobilePush> mobilePushService;
 
     @Async("emailExecutor")
     public void sendEmail(Email email) {
