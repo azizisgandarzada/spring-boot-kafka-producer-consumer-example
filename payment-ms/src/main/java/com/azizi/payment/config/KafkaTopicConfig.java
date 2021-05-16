@@ -25,7 +25,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic paymentTopic() {
-        return new NewTopic(KafkaTopicConstants.PAYMENT_COMPLETED, 1, (short) 1);
+        return new NewTopic(KafkaTopicConstants.PAYMENT_COMPLETED, 3, (short) 1);
     }
 
 }

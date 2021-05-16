@@ -34,7 +34,7 @@ public class PaymentService {
                     .type(NotificationType.EMAIL)
                     .email(emailPayload)
                     .build();
-            kafkaMessageSender.sendMessage(getProducerRecord(payload));
+            kafkaMessageSender.sendMessage(getProducerRecord(payload, 0));
         });
     }
 
@@ -50,7 +50,7 @@ public class PaymentService {
                     .type(NotificationType.SMS)
                     .sms(smsPayload)
                     .build();
-            kafkaMessageSender.sendMessage(getProducerRecord(payload));
+            kafkaMessageSender.sendMessage(getProducerRecord(payload, 1));
         });
     }
 
@@ -68,12 +68,13 @@ public class PaymentService {
                     .type(NotificationType.MOBILE_PUSH)
                     .mobilePush(mobilePushPayload)
                     .build();
-            kafkaMessageSender.sendMessage(getProducerRecord(payload));
+            kafkaMessageSender.sendMessage(getProducerRecord(payload, 2));
         });
     }
 
-    private ProducerRecord<String, NotificationPayload> getProducerRecord(NotificationPayload payload) {
-        return new ProducerRecord<>(KafkaTopicConstants.PAYMENT_COMPLETED, null, payload);
+    private ProducerRecord<String, NotificationPayload> getProducerRecord(NotificationPayload payload,
+                                                                          Integer partition) {
+        return new ProducerRecord<>(KafkaTopicConstants.PAYMENT_COMPLETED, partition, null, payload);
     }
 
 }

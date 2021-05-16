@@ -16,14 +16,13 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Lazy))
-public class EmailService implements NotificationService<Email> {
+public class EmailService {
 
     private static final Integer RETRY_LIMIT = 5;
 
     private final EmailRepository emailRepository;
     private final AsyncService asyncService;
 
-    @Override
     public void createAndSend(NotificationPayload payload) {
         EmailPayload emailPayload = payload.getEmail();
         Email email = Email.builder()
@@ -42,7 +41,6 @@ public class EmailService implements NotificationService<Email> {
         }
     }
 
-    @Override
     public void send(Email email) {
         email.setStatus(NotificationStatus.PROCESSING);
         emailRepository.save(email);

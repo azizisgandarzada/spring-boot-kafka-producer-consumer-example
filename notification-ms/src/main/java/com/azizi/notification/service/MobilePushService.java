@@ -17,14 +17,13 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Lazy))
-public class MobilePushService implements NotificationService<MobilePush> {
+public class MobilePushService {
 
     private static final Integer RETRY_LIMIT = 5;
 
     private final MobilePushRepository mobilePushRepository;
     private final AsyncService asyncService;
 
-    @Override
     public void createAndSend(NotificationPayload payload) {
         MobilePushPayload mobilePushPayload = payload.getMobilePush();
         MobilePush mobilePush = MobilePush.builder()
@@ -43,7 +42,6 @@ public class MobilePushService implements NotificationService<MobilePush> {
         }
     }
 
-    @Override
     public void send(MobilePush mobilePush) {
         mobilePush.setStatus(NotificationStatus.PROCESSING);
         mobilePushRepository.save(mobilePush);

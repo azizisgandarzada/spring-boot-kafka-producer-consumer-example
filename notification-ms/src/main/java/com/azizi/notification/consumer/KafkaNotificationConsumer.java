@@ -2,12 +2,14 @@ package com.azizi.notification.consumer;
 
 import com.azizi.common.constants.KafkaTopicConstants;
 import com.azizi.common.payload.NotificationPayload;
-import com.azizi.notification.service.NotificationService;
-import com.azizi.notification.service.factory.NotificationServiceFactory;
+import com.azizi.notification.service.EmailService;
+import com.azizi.notification.service.MobilePushService;
+import com.azizi.notification.service.SmsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.TopicPartition;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -16,15 +18,29 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class KafkaNotificationConsumer {
 
-    private final NotificationServiceFactory notificationServiceFactory;
+    private final EmailService emailService;
+    private final SmsService smsService;
+    private final MobilePushService mobilePushService;
 
-    @KafkaListener(topics = KafkaTopicConstants.PAYMENT_COMPLETED,
-            containerFactory = "notificationListenerContainerFactory")
-    public void consumePayment(@Payload ConsumerRecord<String, NotificationPayload> record) {
-        log.info("Message Received -> record: {}", record);
-        NotificationPayload payload = record.value();
-        NotificationService<?> notificationService = notificationServiceFactory.getNotificationService(payload.getType());
-        notificationService.createAndSend(payload);
+    @KafkaListener(topicPartitions = @TopicPartition(topic = KafkaTopicConstants.PAYMENT_COMPLETED, partitions =
+            {"0"}), containerFactory = "notificationListenerContainerFactory")
+    public void consumeEmail(@Payload ConsumerRecord<String, NotificationPayload> record) {
+        log.info("Email received -> record: {}", record);
+        emailService.createAndSend(record.value());
+    }
+
+    @KafkaListener(topicPartitions = @TopicPartition(topic = KafkaTopicConstants.PAYMENT_COMPLETED, partitions =
+            {"1"}), containerFactory = "notificationListenerContainerFactory")
+    public void consumeSms(@Payload ConsumerRecord<String, NotificationPayload> record) {
+        log.info("Sms received -> record: {}", record);
+        smsService.createAndSend(record.value());
+    }
+
+    @KafkaListener(topicPartitions = @TopicPartition(topic = KafkaTopicConstants.PAYMENT_COMPLETED, partitions =
+            {"2"}), containerFactory = "notificationListenerContainerFactory")
+    public void consumeMobilePush(@Payload ConsumerRecord<String, NotificationPayload> record) {
+        log.info("Mobile PushNotification received -> record: {}", record);
+        mobilePushService.createAndSend(record.value());
     }
 
 }
