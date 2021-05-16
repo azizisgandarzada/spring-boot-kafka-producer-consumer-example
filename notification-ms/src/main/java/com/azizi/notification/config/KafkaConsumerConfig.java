@@ -4,8 +4,6 @@ import com.azizi.common.constants.KafkaGroupConstants;
 import com.azizi.common.payload.NotificationPayload;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,11 +15,10 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 @Configuration
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class KafkaConsumerConfig {
 
     @Value("${kafka.bootstrap-servers}")
-    String bootstrapServers;
+    private String bootstrapServers;
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, NotificationPayload> notificationListenerContainerFactory() {

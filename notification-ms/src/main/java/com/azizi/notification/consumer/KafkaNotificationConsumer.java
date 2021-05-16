@@ -21,10 +21,10 @@ public class KafkaNotificationConsumer {
     @KafkaListener(topics = KafkaTopicConstants.PAYMENT_COMPLETED,
             containerFactory = "notificationListenerContainerFactory")
     public void consumePayment(@Payload ConsumerRecord<String, NotificationPayload> record) {
-        log.info("Message Received -> record {}", record);
+        log.info("Message Received -> record: {}", record);
         NotificationPayload payload = record.value();
         NotificationService<?> notificationService = notificationServiceFactory.getNotificationService(payload.getType());
-        notificationService.addQueue(payload);
+        notificationService.createAndSend(payload);
     }
 
 }

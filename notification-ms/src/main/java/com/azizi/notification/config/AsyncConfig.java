@@ -11,6 +11,7 @@ public class AsyncConfig {
     public ThreadPoolTaskExecutor emailExecutor() {
         return getThreadPoolTaskExecutor();
     }
+
     @Bean
     public ThreadPoolTaskExecutor smsExecutor() {
         return getThreadPoolTaskExecutor();
@@ -23,9 +24,9 @@ public class AsyncConfig {
 
     private ThreadPoolTaskExecutor getThreadPoolTaskExecutor() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(10);
-        threadPoolTaskExecutor.setMaxPoolSize(50);
-        threadPoolTaskExecutor.setQueueCapacity(20);
+        threadPoolTaskExecutor.setCorePoolSize(50);
+        threadPoolTaskExecutor.setMaxPoolSize(100);
+        threadPoolTaskExecutor.setQueueCapacity(50);
         threadPoolTaskExecutor.afterPropertiesSet();
         return threadPoolTaskExecutor;
     }

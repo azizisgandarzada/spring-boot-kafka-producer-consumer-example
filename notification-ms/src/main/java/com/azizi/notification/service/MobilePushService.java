@@ -6,10 +6,12 @@ import com.azizi.notification.document.MobilePush;
 import com.azizi.notification.enums.NotificationStatus;
 import com.azizi.notification.repository.MobilePushRepository;
 import java.time.LocalDateTime;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,60 +19,60 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor(onConstructor = @__(@Lazy))
 public class MobilePushService implements NotificationService<MobilePush> {
 
+    private static final Integer RETRY_LIMIT = 5;
 
-    private final LinkedBlockingQueue<MobilePush> mobilePushLinkedBlockingQueue;
     private final MobilePushRepository mobilePushRepository;
     private final AsyncService asyncService;
 
     @Override
-    public void addQueue(NotificationPayload payload) {
+    public void createAndSend(NotificationPayload payload) {
         MobilePushPayload mobilePushPayload = payload.getMobilePush();
         MobilePush mobilePush = MobilePush.builder()
                 .userId(payload.getUserId())
-                .status(NotificationStatus.IN_QUEUE)
+                .status(NotificationStatus.CREATED)
                 .title(mobilePushPayload.getTitle())
                 .body(mobilePushPayload.getBody())
                 .token(mobilePushPayload.getToken())
                 .build();
         mobilePushRepository.save(mobilePush);
+        log.info("Mobile PushNotification created -> mobilePush: {}", mobilePush);
         try {
-            mobilePushLinkedBlockingQueue.put(mobilePush);
-            log.info("Mobile PushNotification put to queue {}", mobilePush);
+            asyncService.sendMobilePush(mobilePush);
+        } catch (RejectedExecutionException ex) {
+            waitAndResendAsync(mobilePush, 5, 1, TimeUnit.SECONDS);
+        }
+    }
+
+    @Override
+    public void send(MobilePush mobilePush) {
+        mobilePush.setStatus(NotificationStatus.PROCESSING);
+        mobilePushRepository.save(mobilePush);
+        log.info("Mobile PushNotification sending -> mobilePush: {}", mobilePush);
+        mobilePush.setStatus(NotificationStatus.SENT);
+        mobilePush.setSendAt(LocalDateTime.now());
+        mobilePushRepository.save(mobilePush);
+        log.info("Mobile PushNotification sent -> mobilePush: {}", mobilePush);
+    }
+
+    private void waitAndResendAsync(MobilePush mobilePush, int time, int retryCount, TimeUnit timeUnit) {
+        if (retryCount > RETRY_LIMIT) {
+            mobilePush.setStatus(NotificationStatus.FAILED);
+            mobilePushRepository.save(mobilePush);
+            log.error("Mobile PushNotification can not be send -> mobilePush: {}, retryCount: {}, time: {}, timeUnit:" +
+                    " {}", mobilePush, retryCount, time, timeUnit);
+            return;
+        }
+        try {
+            timeUnit.sleep(time);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
-    }
-
-    @Override
-    public void processNotification() {
-        while (true) {
-            if (mobilePushLinkedBlockingQueue.isEmpty()) {
-                continue;
-            }
-            try {
-                MobilePush notification = mobilePushLinkedBlockingQueue.take();
-                log.info("Mobile PushNotification taken from queue {}", notification);
-                mobilePushRepository.findById(notification.getId()).ifPresent(mobilePush -> {
-                    mobilePush.setStatus(NotificationStatus.PROCESSING);
-                    mobilePush.setProcessedAt(LocalDateTime.now());
-                    mobilePushRepository.save(mobilePush);
-                    asyncService.sendMobilePush(mobilePush);
-                });
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
+        try {
+            asyncService.sendMobilePush(mobilePush);
+        } catch (RejectedExecutionException ex) {
+            retryCount++;
+            waitAndResendAsync(mobilePush, time, retryCount, timeUnit);
         }
-    }
-
-    @Override
-    public void send(MobilePush notification) {
-        mobilePushRepository.findById(notification.getId()).ifPresent(mobilePush -> {
-            log.info("Mobile Push Notification sending... {}", mobilePush);
-            mobilePush.setStatus(NotificationStatus.SENT);
-            mobilePush.setSendAt(LocalDateTime.now());
-            mobilePushRepository.save(mobilePush);
-            log.info("Mobile Push Notification sent {}", mobilePush);
-        });
     }
 
 }

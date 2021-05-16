@@ -4,9 +4,7 @@ import com.azizi.common.payload.NotificationPayload;
 
 public interface NotificationService<T> {
 
-    void addQueue(NotificationPayload payload);
-
-    void processNotification();
+    void createAndSend(NotificationPayload payload);
 
     void send(T notification);
 
